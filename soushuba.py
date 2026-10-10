@@ -115,11 +115,18 @@ class SouShuBaClient:
 
         # 解析 XML，提取 CDATA
         root = ET.fromstring(str(credit_rst))
-        cdata_content = root.text
+        cdata_content = root.text or ""
+        if not cdata_content:
+            logger.warning("Credit response has no CDATA content.")
+            return None
 
         # 使用 BeautifulSoup 解析 CDATA 内容
         cdata_soup = BeautifulSoup(cdata_content, features="lxml")
-        hcredit_2 = cdata_soup.find("span", id="hcredit_2").string
+        hcredit_2_tag = cdata_soup.find("span", id="hcredit_2")
+        if hcredit_2_tag is None or hcredit_2_tag.string is None:
+            logger.warning("Unable to locate credit field 'hcredit_2' in response.")
+            return None
+        hcredit_2 = hcredit_2_tag.string
 
         return hcredit_2
 
